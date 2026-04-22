@@ -1,0 +1,46 @@
+name: Seesaw Hourly AutoPost
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 毎時0分に実行
+  workflow_dispatch:      # 手動実行用
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip' # pipキャッシュ有効化
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run AutoPost script
+        env:
+          SEESAA_EMAIL: ${{ secrets.SEESAA_EMAIL }}
+          SEESAA_PASSWORD: ${{ secrets.SEESAA_PASSWORD }}
+          DMM_API_ID: ${{ secrets.DMM_API_ID }}
+          DMM_AFFILIATE_ID_SEESAA: ${{ secrets.DMM_AFFILIATE_ID_SEESAA }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python main.py
+
+      - name: Commit and Push Database changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add storage.db
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update storage database [skip ci]" && git push)

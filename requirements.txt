@@ -1,0 +1,11 @@
+opencv-python-headless
+mediapipe==0.10.14
+protobuf<5.0.0
+numpy
+matplotlib
+japanize-matplotlib
+python-dotenv
+requests
+pillow
+feedparser
+beautifulsoup4
